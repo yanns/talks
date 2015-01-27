@@ -1,10 +1,10 @@
-@(message: String)
+@(message: String, categories: Seq[String])
 
-@main("Talks | Welcome") {
+@main("Talks | Welcome", categories) {
 <div class="row">
     <div class="large-12 columns">
         <div class="panel">
-            <h3>Talk from xyz</h3>
+            <h3>Talk from @message</h3>
             <p>This a talk about:</p>
             <div class="row">
                 <div class="large-4 medium-4 columns">

@@ -1,4 +1,4 @@
-@(title: String)(content: Html)
+@(title: String, categories: Seq[String])(content: Html)
 
 <!doctype html>
 <html class="no-js" lang="en">
@@ -31,8 +31,9 @@
     <aside class="left-off-canvas-menu">
       <ul class="off-canvas-list">
         <li><label>Foundation</label></li>
-        <li><a href="#">IT talks</a></li>
-        <li><a href="#">...</a></li>
+        @for(c <- categories) {
+          <li><a href="#">@c</a></li>
+        }
       </ul>
     </aside>
 
