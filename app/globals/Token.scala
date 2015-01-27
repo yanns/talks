@@ -78,5 +78,7 @@ object Token {
   }
 
   private def config(key: String): String =
-    current.configuration.getString(key).getOrElse(throw new Exception(s"'$key' should be configured"))
+    Option(System.getenv(key)).getOrElse(
+      current.configuration.getString(key).getOrElse(throw new Exception(s"'$key' should be configured"))
+    )
 }
