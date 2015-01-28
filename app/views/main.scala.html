@@ -1,4 +1,4 @@
-@(title: String, categories: Seq[String])(content: Html)
+@(title: String, categories: Seq[models.Category])(content: Html)
 
 <!doctype html>
 <html class="no-js" lang="en">
@@ -30,9 +30,10 @@
 
     <aside class="left-off-canvas-menu">
       <ul class="off-canvas-list">
-        <li><label>Foundation</label></li>
+        <li><label>Categories</label></li>
+        <li><a href="@controllers.routes.Application.index">All</a></li>
         @for(c <- categories) {
-          <li><a href="#">@c</a></li>
+          <li><a href="@controllers.routes.Application.forCategory(c.id, c.slug)">@c.name</a></li>
         }
       </ul>
     </aside>

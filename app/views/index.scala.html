@@ -1,4 +1,4 @@
-@(message: String, categories: Seq[String], talks: Seq[models.Talk])
+@(message: String, categories: Seq[models.Category], talks: Seq[models.Talk])
 
 @main("Talks | Welcome", categories) {
 
@@ -31,4 +31,13 @@
 </div>
 }
 
+}
+@if(talks.isEmpty) {
+  <div class="row">
+      <div class="large-12 columns">
+          <div class="panel">
+             <h3>No talk found.</h3>
+          </div>
+      </div>
+  </div>
 }
