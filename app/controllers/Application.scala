@@ -30,6 +30,7 @@ object Application extends Controller {
     }
   }
 
+
   implicit val categoryReads: Reads[Category] = (
     (__ \ "id").read[String] and
     (__ \ "name" \ "en").read[String] and
@@ -37,21 +38,21 @@ object Application extends Controller {
   )(Category.apply _)
 
 
-  def categories(): Future[Seq[Category]] =
+  private def categories(): Future[Seq[Category]] =
     for {
       ws ← Token.withToken(WS.url(s"${ApiEndpoint.baseUrl}/categories"))
       response ← performance(ws.get())
-    } yield {
-      val json = response.json
-      (json \ "results").as[JsArray].value.map(_.as[Category])
-    }
+    } yield
+      (response.json \ "results").as[JsArray].value.map(_.as[Category])
 
-  def newTalk(id: String,
-              title: String,
-              attributes: Option[Seq[Attribute]]): Talk = {
+
+
+  private def newTalk(id: String,
+                     title: String,
+                     attributes: Option[Seq[Attribute]]): Talk = {
     val att = attributes.getOrElse(Nil).groupBy(_.name).mapValues(_.apply(0)).mapValues(_.value)
 
-    Logger.debug(att.mkString(", "))
+    Logger.trace(att.mkString(", "))
 
     val authorName = att.get("Author").collect { case JsString(s) ⇒ s}
     val twitter = att.get("twitter").collect { case JsString(s) ⇒ s}
@@ -63,25 +64,22 @@ object Application extends Controller {
     Talk(id, title, author, videos, slides)
   }
 
+
   case class Attribute(name: String, value: JsValue)
 
   object Attribute {
     implicit val jsonReads = Json.reads[Attribute]
   }
 
-  case class SetAttribute(name: String, value: Seq[String])
-
-  object SetAttribute {
-    implicit val jsonReads = Json.reads[SetAttribute]
-  }
 
   implicit val talkReads: Reads[Talk] = (
     (__ \ "id").read[String] and
-      (__ \ "name" \ "en").read[String] and
-      (__ \ "masterVariant" \ "attributes").readNullable[Seq[Attribute]]
-    )(newTalk _)
+    (__ \ "name" \ "en").read[String] and
+    (__ \ "masterVariant" \ "attributes").readNullable[Seq[Attribute]]
+  )(newTalk _)
 
-  def products(categoryId: Option[String]): Future[Seq[Talk]] = {
+
+  private def products(categoryId: Option[String]): Future[Seq[Talk]] = {
     def filterByCategory(ws: WSRequestHolder): WSRequestHolder =
       categoryId.fold(ws) { id ⇒ ws.withQueryString("filter.query" → s"""categories.id:"$id"""")}
 
