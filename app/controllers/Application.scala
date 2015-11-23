@@ -20,7 +20,7 @@ object Application extends Controller {
   def forCategory(categoryId: String, slug: String) = main(Some(categoryId))
 
   def main(categoryId: Option[String]) = Action.async {
-    val futureCategories = categories()
+    val futureCategories = categories2()
     val futureProducts = products(categoryId)
     for {
       c ← futureCategories
@@ -31,20 +31,51 @@ object Application extends Controller {
   }
 
 
-  implicit val categoryReads: Reads[Category] = (
-    (__ \ "id").read[String] and
-    (__ \ "name" \ "en").read[String] and
-    (__ \ "slug" \ "en").read[String]
-  )(Category.apply _)
 
 
-  private def categories(): Future[Seq[Category]] =
+  private def categories(): Future[Seq[Category]] = {
+    implicit val categoryReads: Reads[Category] = (
+      (__ \ "id").read[String] and
+      (__ \ "name" \ "en").read[String] and
+      (__ \ "slug" \ "en").read[String]
+    )(Category.apply _)
+
     for {
       ws ← Token.withToken(WS.url(s"${ApiEndpoint.baseUrl}/categories"))
       response ← performance(ws.get())
     } yield
       (response.json \ "results").as[JsArray].value.map(_.as[Category])
+  }
 
+
+    private val categoryQuery = JsObject(Seq("query" → JsString(
+      s"""query Category {
+          |  categories {
+          |    results {
+          |      id
+          |      name(locale: "en")
+          |      slug(locale: "en")
+          |    }
+          |  }
+          |}
+       """.stripMargin)))
+
+    def categories2(): Future[Seq[Category]] = {
+      implicit val categoryReads: Reads[Category] = (
+        (__ \ "id").read[String] and
+        (__ \ "name").read[String] and
+        (__ \ "slug").read[String]
+      )(Category.apply _)
+
+      for {
+        ws ← Token.withToken(WS.url(s"${ApiEndpoint.baseUrl}/graphql"))
+        response ← performance(ws.post(categoryQuery))
+      } yield {
+        val json = response.json
+        //      Logger.debug(Json.prettyPrint(json))
+        (json \ "data" \ "categories" \ "results").as[JsArray].value.map(_.as[Category])
+      }
+    }
 
 
   private def newTalk(id: String,
