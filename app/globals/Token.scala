@@ -54,7 +54,8 @@ object Token {
         val clientId = config("sphereio.clientId")
         val clientSecret = config("sphereio.clientSecret")
         val projectKey = config("sphereio.projectKey")
-        WS.url("https://auth.sphere.io/oauth/token")
+        val authUrl = config("sphereio.authUrl")
+        WS.url(s"$authUrl/oauth/token")
           .withQueryString("grant_type" -> "client_credentials", "scope" -> s"manage_project:$projectKey")
           .withAuth(clientId, clientSecret, BASIC)
           .withBody(EmptyBody)
@@ -79,6 +80,5 @@ object Token {
 
   private def config(key: String): String =
     Option(System.getenv(key)).getOrElse(
-      current.configuration.getString(key).getOrElse(throw new Exception(s"'$key' should be configured"))
-    )
+      current.configuration.getString(key).getOrElse(throw new Exception(s"'$key' should be configured")))
 }

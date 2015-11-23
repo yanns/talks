@@ -50,7 +50,7 @@ object Application extends Controller {
   private def newTalk(id: String,
                      title: String,
                      attributes: Option[Seq[Attribute]]): Talk = {
-    val att = attributes.getOrElse(Nil).groupBy(_.name).mapValues(_.apply(0)).mapValues(_.value)
+    val att = attributes.getOrElse(Nil).groupBy(_.name).mapValues(_.head).mapValues(_.value)
 
     Logger.trace(att.mkString(", "))
 
